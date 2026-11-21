@@ -1,4 +1,4 @@
-public // Holds all the ASCII art used by the game.
+ // Holds all the ASCII art used by the game.
 public class AsciiArt {
 
     public static final String WARRIOR = """
@@ -75,6 +75,6 @@ public class AsciiArt {
         sb.append(border);
         return sb.toString();
     }
-} {
+} 
     
-}
+

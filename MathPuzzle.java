@@ -1,4 +1,4 @@
-public // Room 2: a number puzzle.
+ // Room 2: a number puzzle.
 public class MathPuzzle implements Puzzle {
 
     private String question;
@@ -45,6 +45,5 @@ public class MathPuzzle implements Puzzle {
             throw new WrongAnswerException("That is not a number!");
         }
     }
-} {
+} 
     
-}
