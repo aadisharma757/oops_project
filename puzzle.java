@@ -1,3 +1,4 @@
+
 // Interface: every room in the dungeon has one puzzle that follows this contract.
 public interface Puzzle {
 
@@ -11,4 +12,4 @@ public interface Puzzle {
 
     // Does nothing if the answer is right, throws an exception if it is wrong.
     void checkAnswer(String input) throws WrongAnswerException;
-} 
+}
