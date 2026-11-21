@@ -1,5 +1,6 @@
-// Inheritance: Thief IS-A Hero.
-public class Thief extends Hero {
+
+// Inheritance: Thief IS-A GameCharacter.
+public class Thief extends GameCharacter {
 
     public Thief(String name) {
         super(name);
@@ -11,8 +12,8 @@ public class Thief extends Hero {
     }
 
     @Override
-    public String getArt() {
-        return AsciiArt.THIEF;
+    public PixelArt getArt() {
+        return AsciiArt.thief();
     }
 
     // Thief power: reveals the hint of the current puzzle.

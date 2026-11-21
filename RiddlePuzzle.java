@@ -1,4 +1,6 @@
-public // Room 1: a text riddle.
+
+
+// Room 1: a text riddle.
 public class RiddlePuzzle implements Puzzle {
 
     private String question;
@@ -39,6 +41,4 @@ public class RiddlePuzzle implements Puzzle {
             throw new WrongAnswerException("Wrong answer! The door stays shut.");
         }
     }
-} {
-    
 }

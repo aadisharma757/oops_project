@@ -1,9 +1,10 @@
+
 import java.util.ArrayList;
 
 // Abstract class: the base for every playable character.
 // It cannot be created directly, only through Warrior or Thief.
 // usePower() comes from the Powerable interface and is left for the subclasses.
-public abstract class Hero implements Powerable {
+public abstract class GameCharacter implements Powerable {
 
     public static final int XP_TO_LEVEL = 100;
 
@@ -14,7 +15,7 @@ public abstract class Hero implements Powerable {
     private ArrayList<String> powers;   // ArrayList of earned powers
 
     // Constructor sets the starting values.
-    public Hero(String name) {
+    public GameCharacter(String name) {
         this.name = name;
         this.xp = 0;
         this.level = 1;
@@ -41,7 +42,7 @@ public abstract class Hero implements Powerable {
         powers.add(power);
     }
 
-    // Adds XP. Returns true if the hero levelled up.
+    // Adds XP. Returns true if the character levelled up.
     public boolean gainXp(int amount) {
         xp += amount;
         boolean leveledUp = false;
@@ -60,5 +61,5 @@ public abstract class Hero implements Powerable {
     // Each subclass supplies its own values.
     public abstract String getClassName();
 
-    public abstract String getArt();
+    public abstract PixelArt getArt();
 }

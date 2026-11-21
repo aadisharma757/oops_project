@@ -1,5 +1,6 @@
-// Inheritance: Warrior IS-A Hero.
-public class Warrior extends Hero {
+
+// Inheritance: Warrior IS-A GameCharacter.
+public class Warrior extends GameCharacter {
 
     public Warrior(String name) {
         super(name);
@@ -11,8 +12,8 @@ public class Warrior extends Hero {
     }
 
     @Override
-    public String getArt() {
-        return AsciiArt.WARRIOR;
+    public PixelArt getArt() {
+        return AsciiArt.warrior();
     }
 
     // Warrior power: bonus XP.

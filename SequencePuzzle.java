@@ -1,3 +1,6 @@
+
+
+
 // Room 3: find the next number in a pattern.
 // Inheritance: it reuses the checking logic of MathPuzzle and only changes
 // the title and how the question is built (polymorphism via overriding).
