@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 import javafx.application.Application;
@@ -18,18 +19,23 @@ public class Main extends Application {
     private static final int TOTAL_TIME = 180;   // 3 minutes for the whole dungeon
     private static final int XP_PER_ROOM = 50;
     private static final int WRONG_PENALTY = 10; // seconds lost for a wrong answer
+    private static final int CELL = 4;           // screen pixels per art cell
+
+    private static final String BACKGROUND = "#05060f";
+    private static final String TEXT_COLOR = "#ffc9a0";
+    private static final String ACCENT = "#ff8a5c";
 
     private Stage stage;
-    private Hero player;                                    // polymorphism: Warrior or Thief
+    private GameCharacter player;                           // polymorphism: Warrior or Thief
     private ArrayList<Puzzle> rooms = new ArrayList<>();    // the 3 rooms
     private int currentRoom;
     private boolean powerUsed;
     private TimerThread timer;
 
-    // Labels that change while playing
+    // Things on the room screen that change while playing
+    private DotCanvas roomCanvas;
     private Label timerLabel;
     private Label roomLabel;
-    private Label doorLabel;
     private Label questionLabel;
     private Label messageLabel;
     private Label statusLabel;
@@ -73,8 +79,11 @@ public class Main extends Application {
     private void showStartScreen() {
         VBox root = makeRoot();
 
+        DotCanvas banner = new DotCanvas(AsciiArt.WIDE_W, AsciiArt.TITLE_H, CELL);
+        banner.show(AsciiArt.title());
+
         Label title = makeLabel(AsciiArt.box("D U N G E O N   E S C A P E",
-                "Solve 3 puzzles before time runs out!"), 16);
+                "Solve 3 puzzles before time runs out!"), 14);
 
         TextField nameField = makeTextField();
         nameField.setPromptText("Enter your hero name");
@@ -83,29 +92,33 @@ public class Main extends Application {
         Button warriorButton = makeButton("Play as Warrior");
         Button thiefButton = makeButton("Play as Thief");
 
-        // Event handling: each button creates a different Hero object.
+        // Event handling: each button creates a different character object.
         warriorButton.setOnAction(e -> startGame(new Warrior(readName(nameField))));
         thiefButton.setOnAction(e -> startGame(new Thief(readName(nameField))));
 
-        VBox warriorBox = new VBox(10, makeLabel(AsciiArt.WARRIOR, 14),
-                makeLabel("Power: Battle Cry (+20 XP)", 12), warriorButton);
-        VBox thiefBox = new VBox(10, makeLabel(AsciiArt.THIEF, 14),
-                makeLabel("Power: Sneaky Hint", 12), thiefButton);
-        warriorBox.setAlignment(Pos.CENTER);
-        thiefBox.setAlignment(Pos.CENTER);
-
-        HBox choices = new HBox(60, warriorBox, thiefBox);
+        HBox choices = new HBox(60,
+                makeChoice(AsciiArt.warrior(), "Power: Battle Cry (+20 XP)", warriorButton),
+                makeChoice(AsciiArt.thief(), "Power: Sneaky Hint", thiefButton));
         choices.setAlignment(Pos.CENTER);
 
-        root.getChildren().addAll(title, nameField, choices);
-        stage.setScene(new Scene(root, 800, 640));
+        root.getChildren().addAll(banner, title, nameField, choices);
+        stage.setScene(new Scene(root, 800, 720));
     }
 
-    private void startGame(Hero chosenHero) {
-        player = chosenHero;
+    // One character card: picture, short description and the button.
+    private VBox makeChoice(PixelArt art, String description, Button button) {
+        DotCanvas picture = new DotCanvas(AsciiArt.PORTRAIT_W, AsciiArt.PORTRAIT_H, CELL);
+        picture.show(art);
+        VBox box = new VBox(8, picture, makeLabel(description, 12), button);
+        box.setAlignment(Pos.CENTER);
+        return box;
+    }
+
+    private void startGame(GameCharacter chosen) {
+        player = chosen;
         currentRoom = 0;
 
-        stage.setScene(new Scene(buildRoomScreen(), 800, 700));
+        stage.setScene(new Scene(buildRoomScreen(), 880, 700));
         loadRoom();
 
         // Start the countdown on a separate thread.
@@ -119,7 +132,6 @@ public class Main extends Application {
 
         timerLabel = makeLabel("TIME LEFT: 03:00", 18);
         roomLabel = makeLabel("", 16);
-        doorLabel = makeLabel("", 12);
         questionLabel = makeLabel("", 15);
         messageLabel = makeLabel("", 14);
         statusLabel = makeLabel("", 13);
@@ -134,7 +146,12 @@ public class Main extends Application {
         submitButton.setOnAction(e -> handleSubmit());
         powerButton.setOnAction(e -> handlePower());
 
-        HBox pictures = new HBox(50, makeLabel(player.getArt(), 12), doorLabel);
+        // The hero picture is drawn once, the room picture changes in loadRoom().
+        DotCanvas heroCanvas = new DotCanvas(AsciiArt.PORTRAIT_W, AsciiArt.PORTRAIT_H, 3);
+        heroCanvas.show(player.getArt());
+        roomCanvas = new DotCanvas(AsciiArt.WIDE_W, AsciiArt.ROOM_H, CELL);
+
+        HBox pictures = new HBox(30, heroCanvas, roomCanvas);
         pictures.setAlignment(Pos.CENTER);
 
         HBox buttons = new HBox(20, submitButton, powerButton);
@@ -149,7 +166,9 @@ public class Main extends Application {
         timer.stopTimer();
         VBox root = makeRoot();
 
-        Label art = makeLabel(won ? AsciiArt.TROPHY : AsciiArt.SKULL, 14);
+        DotCanvas art = new DotCanvas(AsciiArt.PORTRAIT_W, AsciiArt.PORTRAIT_H, 5);
+        art.show(won ? AsciiArt.victory() : AsciiArt.defeat());
+
         Label heading = makeLabel(won
                 ? AsciiArt.box("YOU ESCAPED THE DUNGEON!")
                 : AsciiArt.box("TIME IS UP - GAME OVER"), 16);
@@ -159,7 +178,7 @@ public class Main extends Application {
         playAgain.setOnAction(e -> showStartScreen());
 
         root.getChildren().addAll(art, heading, summary, playAgain);
-        stage.setScene(new Scene(root, 800, 640));
+        stage.setScene(new Scene(root, 800, 720));
     }
 
     // ---------- Game logic ----------
@@ -170,7 +189,7 @@ public class Main extends Application {
 
         roomLabel.setText("ROOM " + (currentRoom + 1) + " of " + rooms.size()
                 + " - " + room.getTitle());
-        doorLabel.setText(AsciiArt.door(currentRoom + 1));
+        roomCanvas.show(AsciiArt.room(currentRoom + 1));
         questionLabel.setText(room.getQuestion());
         answerField.clear();
         messageLabel.setText("");
@@ -233,7 +252,7 @@ public class Main extends Application {
         String powers = player.getPowers().isEmpty() ? "none" : player.getPowers().toString();
         return player.getName() + " the " + player.getClassName()
                 + "\nLEVEL " + player.getLevel() + "   XP " + xpBar()
-                + " " + player.getXp() + "/" + Hero.XP_TO_LEVEL
+                + " " + player.getXp() + "/" + GameCharacter.XP_TO_LEVEL
                 + "\nPOWERS: " + powers;
     }
 
@@ -249,33 +268,33 @@ public class Main extends Application {
     }
 
     private VBox makeRoot() {
-        VBox root = new VBox(15);
+        VBox root = new VBox(12);
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: black;");
+        root.setStyle("-fx-background-color: " + BACKGROUND + ";");
         return root;
     }
 
     private Label makeLabel(String text, int size) {
         Label label = new Label(text);
         label.setFont(Font.font("Monospaced", size));
-        label.setStyle("-fx-text-fill: #33ff33;");
+        label.setStyle("-fx-text-fill: " + TEXT_COLOR + ";");
         return label;
     }
 
     private Button makeButton(String text) {
         Button button = new Button(text);
         button.setFont(Font.font("Monospaced", 14));
-        button.setStyle("-fx-background-color: #003300; -fx-text-fill: #33ff33;"
-                + " -fx-border-color: #33ff33;");
+        button.setStyle("-fx-background-color: #1a1030; -fx-text-fill: " + ACCENT + ";"
+                + " -fx-border-color: " + ACCENT + ";");
         return button;
     }
 
     private TextField makeTextField() {
         TextField field = new TextField();
         field.setFont(Font.font("Monospaced", 14));
-        field.setStyle("-fx-background-color: black; -fx-text-fill: #33ff33;"
-                + " -fx-border-color: #33ff33; -fx-prompt-text-fill: #1a8a1a;");
+        field.setStyle("-fx-background-color: #0c0a1c; -fx-text-fill: " + TEXT_COLOR + ";"
+                + " -fx-border-color: " + ACCENT + "; -fx-prompt-text-fill: #8a5a48;");
         return field;
     }
 
